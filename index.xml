@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+      <title>Mateusz Hromada on Mateusz Hromada </title>
+      <generator uri="https://gohugo.io">Hugo</generator>
+    <link>https://blog.ruanda.pl/</link>
+    <language>pl-pl</language>
+    
+    
+    <updated>Mon, 04 Dec 2017 02:04:01 CET</updated>
+    
+    <item>
+      <title>Kontakt</title>
+      <link>https://blog.ruanda.pl/contact/</link>
+      <pubDate>Mon, 04 Dec 2017 02:04:01 CET</pubDate>
+      
+      <guid>https://blog.ruanda.pl/contact/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>O mnie</title>
+      <link>https://blog.ruanda.pl/about/</link>
+      <pubDate>Sun, 03 Dec 2017 22:57:12 CET</pubDate>
+      
+      <guid>https://blog.ruanda.pl/about/</guid>
+      <description>Lol.</description>
+    </item>
+    
+    <item>
+      <title>Warka 1 - American India Pale Ale</title>
+      <link>https://blog.ruanda.pl/post/2014/01/warka-1---american-india-pale-ale/</link>
+      <pubDate>Sun, 26 Jan 2014 19:03:00 CET</pubDate>
+      
+      <guid>https://blog.ruanda.pl/post/2014/01/warka-1---american-india-pale-ale/</guid>
+      <description>&lt;p&gt;Pierwszą warkę uwarzyłem z &lt;a href=&#34;http://www.browar.biz/centrumpiwowarstwa/zestawy_surowcow/redakcyjne_z_zacieraniem/american_india_pale_ale_aipa_17_blg&#34;&gt;przygotowanego zestawu surowców&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>CLVM z Corosync/OpenAIS W Debianie Squeeze</title>
+      <link>https://blog.ruanda.pl/post/2012/07/clvm-z-corosync/openais-w-debianie-squeeze/</link>
+      <pubDate>Mon, 23 Jul 2012 10:39:00 CEST</pubDate>
+      
+      <guid>https://blog.ruanda.pl/post/2012/07/clvm-z-corosync/openais-w-debianie-squeeze/</guid>
+      <description>CLVM to rozszerzenie LVM pozwalające na pracę w klastrze. Dzięki temu wiele maszyn może równocześnie mieć dostęp do VG na współdzielonym dysku (przez FC, iSCSI, itp.). CLVM sam nie pozwala na budowę klastra, zamiast tego używa istniejącej już infrastruktury do komunikacji między węzłami, np. cman z Red Hat Cluster Suite. Teoretycznie wybór może nastąpić w trakcie uruchomienia, niestety, standardowa paczka w Debianie Squeeze jest na sztywno skompilowana z cman. Istnieje co najmniej parę sytuacji w których taka konfiguracja jest niekorzystna.</description>
+    </item>
+    
+    <item>
+      <title>Debian I Problem Z Multipath</title>
+      <link>https://blog.ruanda.pl/post/2011/12/debian-i-problem-z-multipath/</link>
+      <pubDate>Sun, 11 Dec 2011 15:32:00 CET</pubDate>
+      
+      <guid>https://blog.ruanda.pl/post/2011/12/debian-i-problem-z-multipath/</guid>
+      <description>Z jakiegoś powodu instalacja multipath w Debianie (przetestowane wersje Lenny i Squeeze) nie daje oczekiwanych efektów, tj. przełączania się między ścieżkami i kolejkowania w razie braku działających ścieżek. Problemem okazały się domyślne wartości właściwości fast_io_fail_tmo i dev_loss_tmo.
+Bardzo łatwo można dodać regułę do udeva zmieniającą wartości po dodaniu urządzenia. Przykładowa reguła (do umieszczenia w pliku /etc/udev/rules.d/40-rport.rules):  KERNEL==&amp;ldquo;rport-*&amp;ldquo;, SUBSYSTEM==&amp;ldquo;fc_remote_ports&amp;rdquo;, ACTION==&amp;ldquo;add&amp;rdquo;, RUN+=&amp;ldquo;/bin/sh -c &amp;lsquo;echo 5 &amp;gt; /sys/class/fc_remote_ports/%k/fast_io_fail_tmo;echo 300 &amp;gt;/sys/class/fc_remote_ports/%k/dev_loss_tmo&amp;rsquo;&amp;rdquo;</description>
+    </item>
+    
+    <item>
+      <title>Bieszczady 2011, Dzień 2   Tarnica</title>
+      <link>https://blog.ruanda.pl/post/2011/12/bieszczady-2011-dzie%C5%84-2---tarnica/</link>
+      <pubDate>Sun, 11 Dec 2011 13:27:00 CET</pubDate>
+      
+      <guid>https://blog.ruanda.pl/post/2011/12/bieszczady-2011-dzie%C5%84-2---tarnica/</guid>
+      <description>Tarnica to najwyższy szczyt polskich Bieszczadów. Trasę podzieliliśmy na trzy etapy:  Ustrzyki Górne - Tarnica (GPS), ok. 3h Tarnica - Wołosate (GPS), ok. 1,5h Wołosate - Ustrzyki Górne (GPS), ok. 1,5h</description>
+    </item>
+    
+    <item>
+      <title>Bieszczady 2011, Dzień 1 Dojazd</title>
+      <link>https://blog.ruanda.pl/post/2011/08/bieszczady-2011-dzie%C5%84-1---dojazd/</link>
+      <pubDate>Tue, 30 Aug 2011 20:32:00 CEST</pubDate>
+      
+      <guid>https://blog.ruanda.pl/post/2011/08/bieszczady-2011-dzie%C5%84-1---dojazd/</guid>
+      <description>Trasa dość długa, samochodem jakieś 12 godzin. W zasadzie przez cały dzień udało nam się zobaczyć tylko Kraków.</description>
+    </item>
+    
+  </channel>
+</rss>
+

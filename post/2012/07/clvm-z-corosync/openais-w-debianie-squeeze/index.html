@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>CLVM z Corosync/OpenAIS W Debianie Squeeze - Mateusz Hromada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="keywords" content="">
+  <link rel="canonical" href="https://blog.ruanda.pl/post/2012/07/clvm-z-corosync/openais-w-debianie-squeeze/">
+
+  
+  
+
+  
+  
+
+  
+  
+
+  <link rel="stylesheet" type="text/css" href="https://blog.ruanda.pl/css/combined-min.css">
+
+</head>
+<body class="">
+
+<div class="site-wrap">
+  <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://blog.ruanda.pl" class="site-title">Mateusz Hromada</a>
+      <nav class="site-nav right">
+      <a href="https://blog.ruanda.pl/about/">O mnie</a>
+<a href="https://blog.ruanda.pl/tags/">Tagi</a>
+<a href="https://blog.ruanda.pl/contact/">Kontakt</a>
+</form>
+
+      </nav>
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</header>
+
+  <div class="post p2 p-responsive wrap" role="main">
+    <div class="measure">
+      <div class="post-header mb2">
+        <h1 class="py2">CLVM z Corosync/OpenAIS W Debianie Squeeze</h1>
+        <span class="post-meta">Jul 23, 2012 by ruanda</span><br>
+        
+      </div>
+
+      <article class="post-content">
+      
+
+<p>CLVM to rozszerzenie LVM pozwalające na pracę w klastrze. Dzięki temu wiele maszyn może równocześnie mieć dostęp do VG na współdzielonym dysku (przez FC, iSCSI, itp.). CLVM sam nie pozwala na budowę klastra, zamiast tego używa istniejącej już infrastruktury do komunikacji między węzłami, np. cman z Red Hat Cluster Suite. Teoretycznie wybór może nastąpić w trakcie uruchomienia, niestety, standardowa paczka w Debianie Squeeze jest na sztywno skompilowana z cman. Istnieje co najmniej parę sytuacji w których taka konfiguracja jest niekorzystna.</p>
+
+<p>Przedstawione dalej rozwiązanie jest zaprojektowane głównie z celu ułatwienia konfiguracji klastra, którego jedyną klastrową cechą jest współdzielony dysk i CLVM, natomiast same LV zawierają normalne systemy plików (nie klastrowe) i są używane przez pojedyncze węzły.</p>
+
+<h2>Narzędzia</h2>
+
+<p>Z pewnością potrzebny będzie jakiś edytor, paczki <code>devscripts</code>, <code>dpkg-dev</code>, <code>build-essential</code>, <code>libcorosync-dev</code> i <code>libopenais-dev</code>. Ponadto potrzebne będą paczki oznaczone przez paczkę <code>lvm2</code> jako zależności potrzebne do kompilacji. Najłatwiej zainstalować te paczki poleceniem:
+<pre>
+root@lol:~# apt-get build-dep lvm2
+</pre></p>
+
+<h2>Rekompilacja paczki</h2>
+
+<p>Na początek należy pobrać paczkę źródłową i ją rozpakować:
+<pre>
+root@lol:~# apt-get source lvm2
+</pre></p>
+
+<p>Następnie należy zmodyfikować odpowiednie pliki w katalogu <i>debian</i>, który znajduje się w katalogu z paczką (<i>lvm2-2.02.66</i>).</p>
+
+<p>W pliku <i>control</i> należy do atrybutu <code>Build-Depends</code> dopisać <code>libcorosync-dev</code> i <code>libopenais-dev</code>. Z atrybutu <code>Depends</code> należy usunąć <code>cman</code>.</p>
+
+<p>Następnie należy w pliku <i>rules</i> znaleźć linię zawierającą parametr <code>&ndash;with-clvmd=cman</code> i zamienić na <code>&ndash;with-clvmd=all</code>. Przy okazji można poprawić pewien bug, który powoduje, że paczka <code>clvm</code> automatycznie nie tworzy katalogu <i>/var/run/lvm</i>. Za linią zawierającą polecenie <code>dh_installexamples</code> należy dopisać <code>dh_installdirs</code> i utworzyć plik <i>clvm.dirs</i> zawierający jedną linię
+<pre>
+var/run/lvm
+</pre></p>
+
+<p>Paczka <code>clvm</code> instaluje się razem ze skryptem init, który zależy bezpośrednio od obecności cman. Należy poprawić plik <i>clvm.init</i>. W nagłówkach LSB konieczna jest zastąpienie wartości <code>cman</code> na <code>$cluster_manager</code> dla atrybutów <code>Required-Start</code> i <code>Required-Stop</code>. Następnie należy wyrzucić dwie konstrukcje warunkowe sprawdzające obecność pliku <i>/etc/cluster/cluster.conf</i> i wynik polecenia <code>cman_tool status</code>.</p>
+
+<p>Aby paczka mogła zastąpić standardową paczkę musi mieć wyższy numer wersji. Zgodnie z polityką Debiana najlepiej do istniejącej wersji dopisać jakiś tekst (np. nick) i numer. W ten sposób kolejna oficjalna paczka będzie mieć wyższy numer. Przykładowo numer wersji <code>2.02.66-5</code> można zmienić na <code>2.02.66-5ruanda0</code>. Gdyby paczka zawierała błędy należy inkrementować ostanią część numeru wersji, np. <code>2.02.66-5ruanda1</code>. Numer wersji znajduje się w pliku <i>changlelog</i>, który najłatwiej edytować skryptem <code>dch -i</code>. Skrypt otworzy plik w domyślnym edytorze z dopisanym szkieletem wpisu. Należy poprawić numer wersji, opisać krótko wprowadzone zmiany i ewentualnie poprawić podpis. Istotne jest zachowanie formatowania.</p>
+
+<p>Następnie należy skompilować paczkę:
+<pre>
+root@lol:~/lvm2-2.02.66# dpkg-buildpackage
+</pre></p>
+
+<p>Wszystkie paczki binarne <i>*.deb</i> zostaną utworzone w katalogu nadrzędnym.</p>
+
+<h2>Corosync/OpenAIS</h2>
+
+<p>Należy zainstalować paczki <code>corosync</code> i <code>openais</code>:
+<pre>
+root@lol:~# apt-get install corosync openais
+</pre></p>
+
+<p>Następnie należy skonfigurować corosync. Przykładowa zawartość pliku <i>/etc/corosync/corosync.conf</i>:
+<pre></p>
+
+<h1 id="please-read-the-corosync-conf-5-manual-page">Please read the corosync.conf.5 manual page</h1>
+
+<p>compatibility: whitetank</p>
+
+<p>totem {
+  version: 2
+  secauth: on
+  threads: 0
+  interface {
+    ringnumber: 0
+    bindnetaddr: 10.0.0.0
+    mcastaddr: 226.94.1.1
+    mcastport: 5405
+  }
+}</p>
+
+<p>logging {
+  fileline: off
+  to_stderr: no
+  to_logfile: no
+  to_syslog: yes
+  logfile: /var/log/corosync.log
+  debug: off
+  timestamp: on
+  logger_subsys {
+    subsys: AMF
+    debug: off
+  }
+}</p>
+
+<p>amf {
+  mode: disabled
+}</p>
+
+<p>aisexec {
+  user: root
+  group: root
+}
+</pre></p>
+
+<p>Warto zwrócić uwagę na adres w parametrze <code>bindnetaddr</code>. Zgodnie z dokumentacją powinien być to adres sieci, nie interfejsu. W ten sposób można łatwo współdzielić konfigurację między wieloma węzłami w jednej podsieci.</p>
+
+<p>Następnie należy dopisać w pliku <i>/etc/insserv.conf</i> linię:
+<pre>
+$cluster_manager +cman +corosync
+</pre></p>
+
+<p>Aby poprawnie uruchomić corosync należy dodatkowo zastąpić plik <i>/etc/default/corosync</i> zawartością:
+<pre></p>
+
+<h1 id="start-corosync-at-boot-yes-no">start corosync at boot [yes|no]</h1>
+
+<p>START=yes</p>
+
+<p>COROSYNC_DEFAULT_CONFIG_IFACE=&ldquo;openaisserviceenableexperimental:corosync_parser&rdquo;</p>
+
+<p>export COROSYNC_DEFAULT_CONFIG_IFACE
+</pre></p>
+
+<p>Następnie można uruchomić corosync:
+<pre>
+root@lol:~# /etc/init.d/corosync start
+</pre></p>
+
+<h2>CLVM</h2>
+
+<p>Należy zainstalować przygotowaną wcześniej paczkę <code>clvm</code> jak również <code>lvm2</code>, jeżeli do tej pory nie była zainstalowana.</p>
+
+<p>Aby LVM używał demona clvm, należy w pliku <i>/etc/lvm/lvm.conf</i> atrybut <code>locking_type</code> ustawić na wartość <code>3</code>.</p>
+
+<h2>Użycie</h2>
+
+<p>Aby VG było klastrowe, należy w trakcie tworzenia podać argument <code>-cy</code>, np.
+<pre>
+root@lol:~# vgcreate -cy test-cvg0 /dev/sda1
+</pre></p>
+
+<p>Tak utworzone VG ma ustawiony atrybut <code>c</code> przy listowaniu VG:
+<pre>
+root@lol:~# vgs
+  VG             #PV #LV #SN Attr   VSize  VFree
+  test-local-vg0   1   5   0 wz&ndash;n-  9.52g  6.47g
+  test-cvg0        1   0   0 wz&ndash;nc 50.00g 50.00g
+</pre></p>
+
+<p>LV tworzy się standardowo. Zachęcam do testowej utworzenia LV o tej samej nazwie na wszystkich maszynach równocześnie z użyciem np. <a href="http://clusterssh.wiki.sourceforge.net" title="Cluster SSH">Cluster SSH</a>.</p>
+
+<p><h2>Tips &amp; tricks</h2>
+W standardowej konfiguracji LVM, skrypty startowe debiana uruchomią wszystkie LV przy starcie systemu. Jeżeli system plików nie zapewnia bezpiecznego współdzielenia dysku przez wiele maszyn może to powodować pewne problemy przy manipulowaniu systemem plików z innej, niż przeznaczonej do tego, maszyny. Rozwiązanie problemu jest stosunkowo proste.</p>
+
+<p>LVM umożliwia ustawianie tagów dla VG i LV. Tagi można dodać istniejącym LV i VG poleceniami <code>lvchange</code> i <code>vgchange</code> z argumentem <code>&ndash;addtag jakis_tag</code>. Dokładnie taki sam argument należy podać przy tworzeniu LV i VG, np.:
+<pre>
+root@lol:~# lvcreate &ndash;addtag klaster -L 10G -n tmp test-cvg0
+</pre></p>
+
+<p>Aby wyświetlić ustawione tagi należy zmodyfikować opcje wyświetlane przez polecenia <code>lvs</code> i <code>vgs</code>:
+<pre>
+root@lol:~# lvs -o +lv_tags,vg_tags
+  LV      VG              Attr  LSize   Origin Snap%  Move Log Copy%  Convert LV Tags VG Tags<br />
+  root    test-local-vg0 -wi-ao 488.00m                                               test-local
+  swap    test-local-vg0 -wi-ao 952.00m                                               test-local
+  usr     test-local-vg0 -wi-ao 952.00m                                               test-local
+  var     test-local-vg0 -wi-ao 488.00m                                               test-local
+  var-log test-local-vg0 -wi-ao 244.00m                                               test-local
+  tmp     test-cvg0      -wi-a-  10.00g                                               klaster
+root@lol:~# vgs -o +vg_tags
+  VG             #PV #LV #SN Attr   VSize  VFree  VG Tags<br />
+  test-local-vg0   1   5   0 wz&ndash;n-  9.52g  6.47g test-local
+  test-cvg0        1   1   0 wz&ndash;nc 50.00g 40.00g klaster
+</pre></p>
+
+<p>Tagów można przypisać więcej niż jeden.</p>
+
+<p>W pliku <i>/etc/lvm/lvm.conf</i> można ustawić w atrybucie <code>volume_list</code> listę urządzeń, które mają być włączane przez skrypty startowe. Lista urządzeń może zawierać dokładne nazwy VG lub VG/LV lub tagi w formacie <code>@tag</code>, np.:
+<pre>
+root@lol:~# grep volume_list /etc/lvm/lvm.conf
+    volume_list = [ &ldquo;@test-local&rdquo;, &ldquo;@shared&rdquo; ]
+</pre></p>
+
+<p>Tagi mogą być dowolnym tekstem, ale przy automatyzacji konfiguracji przy użyciu narzędzi typu cfengine, warto rozważyć użycie nazwy hosta jako tag. W ten sposób łatwo też podejrzeć listę hostów, które mają dostęp do LV, wystarczy wylistować tagi;)</p>
+
+      </article>
+
+      <p class="post-meta">Tagi:&nbsp;
+        
+      </p>
+
+      <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ruanda" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    </div>
+  </div>
+</div>
+    <footer class="footer">
+      <div class="p2 wrap">
+        <div class="measure mt1 center">
+      <nav class="social-icons icons">
+<a class="fa fa-rss rss" href="/index.xml"></a>
+
+<a class="fa fa-twitter twitter" href="https://twitter.com/ruandus"></a>
+
+</nav>
+
+          <small>
+            Copyright &#169; 2017<br>
+            Powered by <a href="http://gohugo.io/" target="_blank">Hugo</a> &amp; <a href="https://github.com/azmelanar/hugo-theme-pixyll" target="_blank">Pixyll</a>
+          </small>
+        </div>
+      </div>
+    </footer>
+
+    
+    <script src="/js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    
+
+
+</body>
+</html>
+
